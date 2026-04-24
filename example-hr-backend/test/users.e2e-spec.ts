@@ -7,6 +7,7 @@ describe('Users (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
+    process.env.USERS_SYNC_ENABLED = 'false';
     process.env.SQLITE_STORAGE = ':memory:';
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -21,6 +22,7 @@ describe('Users (e2e)', () => {
   });
 
   afterEach(async () => {
+    delete process.env.USERS_SYNC_ENABLED;
     delete process.env.SQLITE_STORAGE;
     await app.close();
   });

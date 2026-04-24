@@ -42,6 +42,7 @@ describe('UsersService', () => {
     expect(created.name).toBe('Ada');
     expect(created.email).toBe('ada@example.com');
     expect(created.hcmId).toBe('hcm_1');
+    expect(created.balance).toBe(0);
 
     const all = await service.findAll();
     expect(all).toHaveLength(1);

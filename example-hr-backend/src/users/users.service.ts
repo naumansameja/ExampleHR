@@ -15,6 +15,7 @@ export class UsersService {
       name: dto.name,
       email: dto.email,
       hcmId: dto.hcmId,
+      balance: dto.balance ?? 0,
     });
   }
 

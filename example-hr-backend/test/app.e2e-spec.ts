@@ -7,6 +7,7 @@ describe('AppController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
+    process.env.USERS_SYNC_ENABLED = 'false';
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -17,6 +18,7 @@ describe('AppController (e2e)', () => {
   });
 
   afterEach(async () => {
+    delete process.env.USERS_SYNC_ENABLED;
     await app.close();
   });
 

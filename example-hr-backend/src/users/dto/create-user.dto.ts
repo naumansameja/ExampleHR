@@ -1,4 +1,10 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -11,4 +17,8 @@ export class CreateUserDto {
   @IsString()
   @MinLength(1)
   hcmId: string;
+
+  @IsOptional()
+  @IsInt()
+  balance?: number;
 }
