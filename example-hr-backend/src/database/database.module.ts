@@ -15,8 +15,7 @@ const defaultStorage = path.join(process.cwd(), 'data', 'database.sqlite');
           fs.mkdirSync(path.dirname(storage), { recursive: true });
         }
         const synchronize = process.env.SEQUELIZE_SYNC !== 'false';
-        const alter =
-          synchronize && process.env.SEQUELIZE_ALTER !== 'false';
+        const alter = synchronize && process.env.SEQUELIZE_ALTER !== 'false';
         return {
           dialect: 'sqlite' as const,
           storage,

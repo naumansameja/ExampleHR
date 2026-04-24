@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { AxiosError } from 'axios';
 import { ExternalUsersClient } from './external-users.client';
 import type { ExternalUserRow } from './types/external-users.types';
 import { User } from '../users/user.model';
@@ -27,6 +29,7 @@ export class UserDirectorySyncService {
     }
 
     const remoteUsers = await this.externalUsersClient.fetchUsers();
+    // Should be one bulk upsert; we walk rows sequentially instead due to ORM (Sequelize) limitations for a safe, portable path here.
     for (const row of remoteUsers) {
       await this.upsertRemoteRow(row);
     }
@@ -35,8 +38,8 @@ export class UserDirectorySyncService {
   }
 
   /**
-   * `hcmId` is the third-party user id (e.g. usr_001). Fetches the remote list
-   * and upserts the matching row by email.
+   * `hcmId` is the third-party user id (e.g. usr_001). Uses the remote
+   * single-user GET (same collection URL as the list + `/{hcmId}`).
    */
   async syncUserByHcmId(hcmId: string): Promise<User> {
     const base = process.env.USERS_SYNC_BASE_URL?.trim();
@@ -44,13 +47,18 @@ export class UserDirectorySyncService {
       throw new BadRequestException('USERS_SYNC_BASE_URL is not set');
     }
 
-    const remoteUsers = await this.externalUsersClient.fetchUsers();
-    const row = remoteUsers.find((u) => u.id === hcmId);
-    if (!row) {
-      throw new NotFoundException(`No remote user with hcm id "${hcmId}"`);
+    try {
+      const row = await this.externalUsersClient.fetchUserByHcmId(hcmId);
+      return await this.upsertRemoteRow(row);
+    } catch (err) {
+      if (
+        err instanceof AxiosError &&
+        err.response?.status === HttpStatus.NOT_FOUND
+      ) {
+        throw new NotFoundException(`No remote user with hcm id "${hcmId}"`);
+      }
+      throw err;
     }
-
-    return this.upsertRemoteRow(row);
   }
 
   private async upsertRemoteRow(row: ExternalUserRow): Promise<User> {

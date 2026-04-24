@@ -27,6 +27,18 @@ app.get("/api/users", (_req, res) => {
   res.json({ users });
 });
 
+app.get("/api/users/:userId", (req, res) => {
+  const { userId } = req.params;
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return res.status(404).json({
+      code: "USER_NOT_FOUND",
+      message: "No user exists with the given id.",
+    });
+  }
+  return res.json({ user });
+});
+
 /**
  * Apply leave: deducts leaveDays from user's balance.
  * Headers: Idempotency-Key (required)

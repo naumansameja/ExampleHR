@@ -9,9 +9,11 @@ describe('UserDirectorySyncService', () => {
   let service: UserDirectorySyncService;
   let sequelize: Sequelize;
   const fetchUsers = jest.fn();
+  const fetchUserByHcmId = jest.fn();
 
   beforeEach(async () => {
     fetchUsers.mockReset();
+    fetchUserByHcmId.mockReset();
     process.env.USERS_SYNC_BASE_URL = 'http://example.test';
     fetchUsers.mockResolvedValue([
       { id: 'usr_001', name: 'Alice', email: 'a@ex.com', balance: 10 },
@@ -32,7 +34,10 @@ describe('UserDirectorySyncService', () => {
       ],
       providers: [
         UserDirectorySyncService,
-        { provide: ExternalUsersClient, useValue: { fetchUsers } },
+        {
+          provide: ExternalUsersClient,
+          useValue: { fetchUsers, fetchUserByHcmId },
+        },
       ],
     }).compile();
 
@@ -58,14 +63,18 @@ describe('UserDirectorySyncService', () => {
   });
 
   it('syncUserByHcmId upserts a single remote row', async () => {
-    fetchUsers.mockResolvedValueOnce([
-      { id: 'usr_x', name: 'Zed', email: 'zed@ex.com', balance: 3 },
-    ]);
+    fetchUserByHcmId.mockResolvedValueOnce({
+      id: 'usr_x',
+      name: 'Zed',
+      email: 'zed@ex.com',
+      balance: 3,
+    });
 
     const user = await service.syncUserByHcmId('usr_x');
     expect(user.email).toBe('zed@ex.com');
     expect(user.hcmId).toBe('usr_x');
     expect(user.balance).toBe(3);
-    expect(fetchUsers).toHaveBeenCalledTimes(1);
+    expect(fetchUserByHcmId).toHaveBeenCalledWith('usr_x');
+    expect(fetchUsers).not.toHaveBeenCalled();
   });
 });
