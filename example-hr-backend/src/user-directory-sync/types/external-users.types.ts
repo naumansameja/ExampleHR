@@ -1,9 +1,6 @@
-export type ExternalUserRow = {
-  id: string;
-  name: string;
-  email: string;
-  balance: number;
-};
+import type { RemoteUserPayload } from '../../users/remote-user-payload.type';
+
+export type ExternalUserRow = RemoteUserPayload;
 
 export type ExternalUsersResponse = {
   users: ExternalUserRow[];

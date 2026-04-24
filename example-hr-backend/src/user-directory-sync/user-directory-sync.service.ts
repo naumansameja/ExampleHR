@@ -5,8 +5,8 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { AxiosError } from 'axios';
+import { UsersService } from '../users/users.service';
 import { ExternalUsersClient } from './external-users.client';
 import type { ExternalUserRow } from './types/external-users.types';
 import { User } from '../users/user.model';
@@ -16,8 +16,7 @@ export class UserDirectorySyncService {
   private readonly logger = new Logger(UserDirectorySyncService.name);
 
   constructor(
-    @InjectModel(User)
-    private readonly userModel: typeof User,
+    private readonly usersService: UsersService,
     private readonly externalUsersClient: ExternalUsersClient,
   ) {}
 
@@ -31,7 +30,7 @@ export class UserDirectorySyncService {
     const remoteUsers = await this.externalUsersClient.fetchUsers();
     // Should be one bulk upsert; we walk rows sequentially instead due to ORM (Sequelize) limitations for a safe, portable path here.
     for (const row of remoteUsers) {
-      await this.upsertRemoteRow(row);
+      await this.usersService.upsertFromRemotePayload(row);
     }
 
     this.logger.log(`Batch synced ${remoteUsers.length} user(s) from remote`);
@@ -48,8 +47,9 @@ export class UserDirectorySyncService {
     }
 
     try {
-      const row = await this.externalUsersClient.fetchUserByHcmId(hcmId);
-      return await this.upsertRemoteRow(row);
+      const row: ExternalUserRow =
+        await this.externalUsersClient.fetchUserByHcmId(hcmId);
+      return await this.usersService.upsertFromRemotePayload(row);
     } catch (err) {
       if (
         err instanceof AxiosError &&
@@ -59,25 +59,5 @@ export class UserDirectorySyncService {
       }
       throw err;
     }
-  }
-
-  private async upsertRemoteRow(row: ExternalUserRow): Promise<User> {
-    const [user, created] = await this.userModel.findOrCreate({
-      where: { email: row.email },
-      defaults: {
-        name: row.name,
-        hcmId: row.id,
-        balance: row.balance,
-      },
-    });
-    if (!created) {
-      await user.update({
-        name: row.name,
-        hcmId: row.id,
-        balance: row.balance,
-      });
-    }
-    await user.reload();
-    return user;
   }
 }

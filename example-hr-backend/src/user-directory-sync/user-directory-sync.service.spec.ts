@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getConnectionToken, SequelizeModule } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { User } from '../users/user.model';
+import { UsersService } from '../users/users.service';
 import { ExternalUsersClient } from './external-users.client';
 import { UserDirectorySyncService } from './user-directory-sync.service';
 
@@ -33,6 +34,7 @@ describe('UserDirectorySyncService', () => {
         SequelizeModule.forFeature([User]),
       ],
       providers: [
+        UsersService,
         UserDirectorySyncService,
         {
           provide: ExternalUsersClient,
