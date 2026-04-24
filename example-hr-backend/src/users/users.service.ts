@@ -24,6 +24,10 @@ export class UsersService {
     return this.userModel.findAll({ order: [['id', 'ASC']] });
   }
 
+  findByEmail(email: string): Promise<User | null> {
+    return this.userModel.findOne({ where: { email } });
+  }
+
   /** Upsert by `email`; `payload.id` is stored as `hcmId`. */
   async upsertFromRemotePayload(payload: RemoteUserPayload): Promise<User> {
     const [user, created] = await this.userModel.findOrCreate({
