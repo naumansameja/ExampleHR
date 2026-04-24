@@ -8,6 +8,7 @@ import { UserDirectorySyncService } from './user-directory-sync.service';
 
 describe('UserDirectorySyncService', () => {
   let service: UserDirectorySyncService;
+  let usersService: UsersService;
   let sequelize: Sequelize;
   const fetchUsers = jest.fn();
   const fetchUserByHcmId = jest.fn();
@@ -44,6 +45,7 @@ describe('UserDirectorySyncService', () => {
     }).compile();
 
     service = module.get(UserDirectorySyncService);
+    usersService = module.get(UsersService);
     sequelize = module.get(getConnectionToken());
   });
 
@@ -62,6 +64,25 @@ describe('UserDirectorySyncService', () => {
     expect(users[0].hcmId).toBe('usr_001b');
     expect(users[0].balance).toBe(11);
     expect(fetchUsers).toHaveBeenCalledTimes(1);
+  });
+
+  it('batchSync removes local users whose email is not on the remote list', async () => {
+    await usersService.create({
+      name: 'Orphan',
+      email: 'orphan@ex.com',
+      hcmId: 'local_only',
+      balance: 0,
+    });
+
+    fetchUsers.mockResolvedValueOnce([
+      { id: 'usr_001', name: 'Alice', email: 'a@ex.com', balance: 10 },
+    ]);
+
+    await service.batchSync();
+
+    const users = await User.findAll({ order: [['email', 'ASC']] });
+    expect(users).toHaveLength(1);
+    expect(users[0].email).toBe('a@ex.com');
   });
 
   it('syncUserByHcmId upserts a single remote row', async () => {

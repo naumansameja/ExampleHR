@@ -33,7 +33,19 @@ export class UserDirectorySyncService {
       await this.usersService.upsertFromRemotePayload(row);
     }
 
-    this.logger.log(`Batch synced ${remoteUsers.length} user(s) from remote`);
+    const remoteEmails = [...new Set(remoteUsers.map((r) => r.email))];
+    let removed = 0;
+    if (remoteEmails.length > 0) {
+      removed = await this.usersService.deleteUsersExceptEmails(remoteEmails);
+    } else if (remoteUsers.length === 0) {
+      this.logger.warn(
+        'Remote user list is empty; skipping deletion of local users',
+      );
+    }
+
+    this.logger.log(
+      `Batch synced ${remoteUsers.length} remote row(s); removed ${removed} local user(s) not present in remote`,
+    );
   }
 
   /**

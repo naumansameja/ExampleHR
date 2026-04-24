@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { CreateUserDto } from './dto/create-user.dto';
 import type { RemoteUserPayload } from './types/remote-user-payload.type';
 import { User } from './user.model';
@@ -26,6 +27,19 @@ export class UsersService {
 
   findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ where: { email } });
+  }
+
+  /**
+   * Deletes users whose email is not in `emails`. No-op when `emails` is empty
+   * (caller should avoid passing an empty list when the intent is “full wipe”).
+   */
+  async deleteUsersExceptEmails(emails: string[]): Promise<number> {
+    if (emails.length === 0) {
+      return 0;
+    }
+    return this.userModel.destroy({
+      where: { email: { [Op.notIn]: emails } },
+    });
   }
 
   /** Upsert by `email`; `payload.id` is stored as `hcmId`. */
