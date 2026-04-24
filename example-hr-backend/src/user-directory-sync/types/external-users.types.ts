@@ -1,4 +1,4 @@
-import type { RemoteUserPayload } from '../../users/remote-user-payload.type';
+import type { RemoteUserPayload } from '../../users/types/remote-user-payload.type';
 
 export type ExternalUserRow = RemoteUserPayload;
 

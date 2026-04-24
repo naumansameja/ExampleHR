@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateUserDto } from './dto/create-user.dto';
-import type { RemoteUserPayload } from './remote-user-payload.type';
+import type { RemoteUserPayload } from './types/remote-user-payload.type';
 import { User } from './user.model';
 
 @Injectable()
