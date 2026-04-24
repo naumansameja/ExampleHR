@@ -12,7 +12,13 @@ export class ExternalUsersClient {
     if (!base) {
       throw new Error('USERS_SYNC_BASE_URL is not set');
     }
-    const url = `${base.replace(/\/$/, '')}/users`;
+    // mock-hcm uses GET /api/users; override with USERS_SYNC_USERS_PATH (e.g. "users")
+    const usersPath = (
+      process.env.USERS_SYNC_USERS_PATH ?? '/users'
+    ).replace(/^\/+/, '');
+
+    const url = `${base.replace(/\/$/, '')}/${usersPath}`;
+    console.log('url', url);
     const { data } = await firstValueFrom(
       this.http.get<ExternalUsersResponse>(url),
     );

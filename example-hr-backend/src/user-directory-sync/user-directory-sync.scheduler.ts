@@ -8,7 +8,8 @@ export class UserDirectorySyncScheduler {
 
   constructor(private readonly directorySync: UserDirectorySyncService) {}
 
-  @Cron(process.env.USER_SYNC_CRON ?? '*/5 * * * *')
+  /** 6-field cron (includes seconds). Override with `USER_SYNC_CRON`. */
+  @Cron(process.env.USER_SYNC_CRON?.trim() || '*/30 * * * * *')
   async handleCron(): Promise<void> {
     if (process.env.USERS_SYNC_ENABLED === 'false') {
       return;

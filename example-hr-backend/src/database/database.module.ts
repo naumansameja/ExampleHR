@@ -14,11 +14,15 @@ const defaultStorage = path.join(process.cwd(), 'data', 'database.sqlite');
         if (storage !== ':memory:') {
           fs.mkdirSync(path.dirname(storage), { recursive: true });
         }
+        const synchronize = process.env.SEQUELIZE_SYNC !== 'false';
+        const alter =
+          synchronize && process.env.SEQUELIZE_ALTER !== 'false';
         return {
           dialect: 'sqlite' as const,
           storage,
           autoLoadModels: true,
-          synchronize: process.env.SEQUELIZE_SYNC !== 'false',
+          synchronize,
+          ...(alter ? { sync: { alter: true } } : {}),
           define: { underscored: true },
           logging:
             process.env.SEQUELIZE_LOGGING === 'true' ? console.log : false,
