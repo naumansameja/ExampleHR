@@ -1,7 +1,7 @@
 [
   {
     "id": "usr_001",
-    "name": "Alice Johnson",
+    "name": "Alice Johnso",
     "email": "alice.johnson@example.com",
     "balance": 10
   },
@@ -16,5 +16,11 @@
     "name": "Carol Davis",
     "email": "carol.davis@example.com",
     "balance": 22
+  },
+  {
+    "id": "usr_004",
+    "name": "Dave Evans",
+    "email": "dave.evans@example.com",
+    "balance": 33
   }
 ]

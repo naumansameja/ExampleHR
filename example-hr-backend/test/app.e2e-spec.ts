@@ -7,22 +7,29 @@ describe('AppController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
+    process.env.USERS_SYNC_ENABLED = 'false';
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api/v1');
     await app.init();
   });
 
   afterEach(async () => {
+    delete process.env.USERS_SYNC_ENABLED;
     await app.close();
   });
 
-  it('/health (GET)', () => {
+  it('/api/v1/health (GET)', () => {
     return request(app.getHttpServer())
-      .get('/health')
+      .get('/api/v1/health')
       .expect(200)
-      .expect({ status: 'ok', service: 'example-hr-backend' });
+      .expect({
+        status: 'ok',
+        service: 'example-hr-backend',
+        database: true,
+      });
   });
 });
