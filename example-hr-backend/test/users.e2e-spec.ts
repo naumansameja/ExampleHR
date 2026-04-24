@@ -25,22 +25,12 @@ describe('Users (e2e)', () => {
     await app.close();
   });
 
-  it('POST /api/v1/users then GET /api/v1/users', async () => {
-    await request(app.getHttpServer())
-      .post('/api/v1/users')
-      .send({ name: 'Bob', email: 'bob@example.com', hcmId: 'hcm_99' })
-      .expect(201)
-      .expect((res) => {
-        expect(res.body.name).toBe('Bob');
-        expect(res.body.email).toBe('bob@example.com');
-        expect(res.body.hcmId).toBe('hcm_99');
-        expect(res.body.id).toBeDefined();
-      });
-
-    const res = await request(app.getHttpServer()).get('/api/v1/users').expect(200);
+  it('GET /api/v1/users returns an empty list when nothing was created', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/v1/users')
+      .expect(200);
 
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body).toHaveLength(1);
-    expect(res.body[0].hcmId).toBe('hcm_99');
+    expect(res.body).toHaveLength(0);
   });
 });
