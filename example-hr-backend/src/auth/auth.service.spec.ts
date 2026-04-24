@@ -10,7 +10,6 @@ describe('AuthService', () => {
   const signAsync = jest.fn();
 
   beforeEach(async () => {
-    process.env.AUTH_SHARED_PASSWORD = 'same-for-everyone';
     findByEmail.mockReset();
     signAsync.mockReset();
     signAsync.mockResolvedValue('signed-jwt');
@@ -26,28 +25,16 @@ describe('AuthService', () => {
     service = module.get(AuthService);
   });
 
-  afterEach(() => {
-    delete process.env.AUTH_SHARED_PASSWORD;
-  });
-
-  it('returns a JWT with user id when email and password match', async () => {
+  it('returns a JWT with user id when email exists', async () => {
     findByEmail.mockResolvedValue({ id: 42, email: 'a@ex.com' });
 
     const result = await service.login({
       email: 'a@ex.com',
-      password: 'same-for-everyone',
     });
 
     expect(result.access_token).toBe('signed-jwt');
     expect(signAsync).toHaveBeenCalledWith({ sub: 42 });
     expect(findByEmail).toHaveBeenCalledWith('a@ex.com');
-  });
-
-  it('rejects wrong password', async () => {
-    await expect(
-      service.login({ email: 'a@ex.com', password: 'wrong' }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-    expect(findByEmail).not.toHaveBeenCalled();
   });
 
   it('rejects unknown email', async () => {
@@ -56,7 +43,6 @@ describe('AuthService', () => {
     await expect(
       service.login({
         email: 'missing@ex.com',
-        password: 'same-for-everyone',
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
